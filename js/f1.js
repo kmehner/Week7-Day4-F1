@@ -22,26 +22,35 @@ console.log('This is the F1 js file')
 {
     // Grab the form
     let form = document.getElementById('raceForm');
+    console.log(form)
 
     // Create function to handle submit event
     async function handleSubmit(e){
         e.preventDefault();
+
+        // Check if table has data
+        var raceTable = document.getElementById('standingsTable'); 
+        var tableRows = raceTable.rows.length;
+        
+        // If table has data (length > 1) remove that data
+        // -1 so the table head doesn't get removed
+        if (tableRows > 1){
+            for (let i = 0; i < tableRows -1; i++){
+                table.deleteRow(-1)
+            };
+        };
+
         let raceYear = e.target.raceYear.value
         let raceSeason = e.target.raceSeason.value
+        console.log(raceYear, raceSeason)
 
         // Make the request to get data 
         let race = await getRaceInfo(raceYear, raceSeason)
-        raceinfo = race.MRData.StandingsTable;
-        console.log(raceinfo)
-        // raceStanding = raceinfo.StandingsList[1]
-        // console.log(raceStanding)
-        
-
-        // Built the element to display
-        // insert table func here
-        // await buildRaceTable(race);
-        // e.target.raceYear.value = '';
-        // e.target.raceSeason.value = '';
+        console.log(race)
+        // append race info to rows 
+        for (let i = 0; i < race.length; i++){
+            addRow(race[i])
+        };
     }
 
     // function that accepts year/season and returns race info
@@ -51,82 +60,56 @@ console.log('This is the F1 js file')
         try{
             let res = await fetch(`https://ergast.com/api/f1/${raceYear}/${raceSeason}/driverStandings.json`)
             let data = await res.json();
-            return data
+            return data['MRData']['StandingsTable']['StandingsLists']['0']['DriverStandings']
         } catch(e){
             console.error(e)
         }
     }
 
-    // function to build the table for the output 
-    // position, points, driver name, driver nationality, and constructor name.
+    // function to add the table rows for the output 
 
-    async function buildRaceTable(race){
+    async function addRow(race){
+        // Table body to insert into
+        const tbody = document.getElementById('f1Body')
+        // Table Row
+        const row = document.createElement('tr')
 
-        // Find the table div in the HTML
-        const raceDiv = document.getElementById('standingsTable')
+        // Position
+        let position = race['position']
+        const th = document.createElement('th')
+        th.scope = "row"
+        th.innerHTML = position
+        row.append(th)
 
-        let tableHeaders = ['Position', 'Driver Name', 'Driver Nationality', 'Constructor name']
+        // Driver name
+        let driver = race['Driver']['givenName']
+        const driverTD = document.createElement('td')
+        driverTD.innerHTML = driver
+        row.append(driverTD)
 
-        
-        // remove all children from table if any
-        while (raceDiv.firstChild) raceDiv.removeChild(raceDiv.firstChild)
+        // Points
+        let points = race['points']
+        const pointsTD = document.createElement('td')
+        pointsTD.innerHTML = points
+        row.append(pointsTD)
 
-        // create the table 
-        let raceTable = document.createElement('table')
-        raceTable.className = 'raceTable'
+        // Nationality
+        let nation = race['Driver']['nationality']
+        const nationTD = document.createElement('td')
+        nationTD.innerHTML = nation
+        row.append(nationTD)
 
-        // create the table header group element 
-        let raceTableHead = document.createElement('thead')
-        raceTableHead.className = 'raceTableHead'
+        // Constructor
+        let constructor = race['Constructors'][0]['constructorId']
+        let constID = document.createElement('td')
+        constID.innerHTML = constructor
+        row.append(constID)
 
-        // create the row that contains the header
-        let raceTableHeaderRow = document.createElement('tr')
-        raceTableHeaderRow.className = 'raceTableHeaderRow'
+        // console.log(driver, position, points, nation, constructor)
+        // Add row to table body
+        tbody.append(row)
 
-        // iterate over all the strings in the tableHeader array and append the header cells to the table header row
-        tableHeaders.forEach(header => {
-            let raceHeader = document.createElement('th')
-            raceHeader.innerHTML = header
-            raceTableHeaderRow.append(raceHeader)
-        })
-
-        // Append the header row to the table header group element 
-        raceTableHead.append(raceTableHeaderRow)
-        raceTable.append(raceTableHead)
-
-        // Create the table body group element 
-        let raceTableBody = document.createElement('tbody')
-        raceTableBody.className = "raceTable-Body"
-        raceTable.append(raceTableBody)
-
-        // append the table to the scoreboard div 
-        raceDiv.append(raceTable)
-
-        // Create the current table row 
-        let raceTableBodyRow = document.createElement('tr')
-        raceTableBodyRow.className = 'raceTableBodyRow'
-
-        // create the column cells that will be appended to the current table 
-        let racePosition = document.createElement('td')
-        racePosition.innerText = race.position
-
-        let racePoints = document.createElement('td')
-        racePoints.innerText = race.points
-
-        let raceDriver = document.createElement('td')
-        racePoints.innerText = race.Driver.driverId
-
-        let raceNationality = document.createElement('td')
-        raceNationality.innerText = race.Driver.nationality
-
-        let raceConstructorId = document.createElement('td')
-        raceConstructorId.innerText = race.Constructors.ConstructorID
-
-        raceTableBodyRow.append(racePosition, racePoints, raceDriver,raceNationality,raceConstructorId)
-        raceTable.append(raceTableBodyRow)
-        
     }
-
        
     // Add submit event listener to form
     form.addEventListener('submit', handleSubmit)

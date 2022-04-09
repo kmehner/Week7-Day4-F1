@@ -31,8 +31,7 @@ console.log('This is the F1 js file')
 
         // Make the request to get data 
         let race = await getRaceInfo(raceYear, raceSeason)
-        raceinfo = race.MRData.StandingsTable;
-        console.log(raceinfo)
+        console.log(race)
         // raceStanding = raceinfo.StandingsList[1]
         // console.log(raceStanding)
         
@@ -51,7 +50,7 @@ console.log('This is the F1 js file')
         try{
             let res = await fetch(`https://ergast.com/api/f1/${raceYear}/${raceSeason}/driverStandings.json`)
             let data = await res.json();
-            return data
+            return data[StandingsList][0]
         } catch(e){
             console.error(e)
         }
@@ -101,6 +100,10 @@ console.log('This is the F1 js file')
 
         // append the table to the scoreboard div 
         raceDiv.append(raceTable)
+
+    }
+
+    async function addRow(race){
 
         // Create the current table row 
         let raceTableBodyRow = document.createElement('tr')

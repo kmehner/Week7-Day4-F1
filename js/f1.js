@@ -32,15 +32,19 @@ console.log('This is the F1 js file')
         // Make the request to get data 
         let race = await getRaceInfo(raceYear, raceSeason)
         console.log(race)
-        // raceStanding = raceinfo.StandingsList[1]
-        // console.log(raceStanding)
-        
 
         // Built the element to display
-        // insert table func here
-        // await buildRaceTable(race);
-        // e.target.raceYear.value = '';
-        // e.target.raceSeason.value = '';
+        let createTable = await buildRaceTable()
+        console.log(createTable)
+
+        // Add rows 
+        for (const singleDriver of race){
+            let singleDriverIndex = race.indexOf(singleDriver) + 1
+            addRow(singleDriver, singleDriverIndex)
+        }
+
+
+
     }
 
     // function that accepts year/season and returns race info
@@ -50,7 +54,7 @@ console.log('This is the F1 js file')
         try{
             let res = await fetch(`https://ergast.com/api/f1/${raceYear}/${raceSeason}/driverStandings.json`)
             let data = await res.json();
-            return data[StandingsList][0]
+            return data['MRData']['StandingsTable']['StandingsLists'][0]['DriverStandings']
         } catch(e){
             console.error(e)
         }
@@ -59,12 +63,12 @@ console.log('This is the F1 js file')
     // function to build the table for the output 
     // position, points, driver name, driver nationality, and constructor name.
 
-    async function buildRaceTable(race){
+    async function buildRaceTable(){
 
         // Find the table div in the HTML
         const raceDiv = document.getElementById('standingsTable')
 
-        let tableHeaders = ['Position', 'Driver Name', 'Driver Nationality', 'Constructor name']
+        let tableHeaders = ['Position', 'Points', 'Driver Name', 'Driver Nationality', 'Constructor name']
 
         
         // remove all children from table if any
@@ -103,7 +107,8 @@ console.log('This is the F1 js file')
 
     }
 
-    async function addRow(race){
+    async function addRow(singleDriver, singleDriverIndex){
+        const raceTable = document.querySelector('.raceTable')
 
         // Create the current table row 
         let raceTableBodyRow = document.createElement('tr')
@@ -111,19 +116,19 @@ console.log('This is the F1 js file')
 
         // create the column cells that will be appended to the current table 
         let racePosition = document.createElement('td')
-        racePosition.innerText = race.position
+        racePosition.innerText = singleDriver.position
 
         let racePoints = document.createElement('td')
-        racePoints.innerText = race.points
+        racePoints.innerText = singleDriver.points
 
         let raceDriver = document.createElement('td')
-        racePoints.innerText = race.Driver.driverId
+        racePoints.innerText = singleDriver.Driver['familyName']
 
         let raceNationality = document.createElement('td')
-        raceNationality.innerText = race.Driver.nationality
+        raceNationality.innerText = singleDriver.Driver.nationality
 
         let raceConstructorId = document.createElement('td')
-        raceConstructorId.innerText = race.Constructors.ConstructorID
+        raceConstructorId.innerText = singleDriver.Constructors[0].name
 
         raceTableBodyRow.append(racePosition, racePoints, raceDriver,raceNationality,raceConstructorId)
         raceTable.append(raceTableBodyRow)

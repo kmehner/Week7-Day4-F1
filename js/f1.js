@@ -43,7 +43,8 @@ console.log('This is the F1 js file')
             addRow(singleDriver, singleDriverIndex)
         }
 
-
+        e.target.raceYear.value = "";
+        e.target.raceSeason.value = "";
 
     }
 
@@ -122,7 +123,7 @@ console.log('This is the F1 js file')
         racePoints.innerText = singleDriver.points
 
         let raceDriver = document.createElement('td')
-        racePoints.innerText = singleDriver.Driver['familyName']
+        raceDriver.innerText = singleDriver.Driver['familyName']
 
         let raceNationality = document.createElement('td')
         raceNationality.innerText = singleDriver.Driver.nationality
